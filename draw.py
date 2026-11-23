@@ -291,8 +291,8 @@ def main():
     d.rectangle([0, 130, W, 133], fill=RED)
 
     # ---------- 2. stats strip 130-196
-    stats = [("38", "STORIES"), ("7", "REGIONS"),
-             ("186", "DRONES IN ONE NIGHT"), ("161", "SHOT DOWN"),
+    stats = [("186", "DRONES IN ONE NIGHT"), ("7", "REGIONS"),
+             ("38", "STORIES"), ("161", "SHOT DOWN"),
              ("14", "TRAPPED IN DYMER"), ("24", "DEAD OFF NIGERIA")]
     cellw = CW / 6
     ytop, ybot = 138, 192
@@ -431,7 +431,7 @@ def main():
         x1, y1 = x0 + gcw, y0 + gch
         d.rectangle([x0, y0, x1, y1], fill=WHITE, outline=RULE, width=1)
         d.rectangle([x0, y0, x0 + 3, y1], fill=REGIONS[reg])
-        badge(d, x0 + 7, y0 + 5, status, bold(5))
+        badge(d, x0 + 7, y0 + 5, status, bold(6))
         d.text((x1 - 12, y0 + 4), str(i + 4), font=bold(9), fill=RED)
         pl, plf = fit(place, bold(6), gcw - 26)
         d.text((x0 + 7, y0 + 15), pl, font=plf, fill=REGIONS[reg])
