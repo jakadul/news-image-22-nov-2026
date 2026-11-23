@@ -1,15 +1,19 @@
 #!/usr/bin/env python3
-"""Stream entry.png from beside this script (or /bot/entry.png) to /output/entry.png."""
+"""Copy entry.png into /output/entry.png in 64 KiB chunks."""
 
+import hashlib
 import os
+import shutil
 import sys
 
 CHUNK = 64 * 1024
+NAME = "entry.png"
 
 
 def find_source():
     here = os.path.dirname(os.path.abspath(__file__))
-    for path in (os.path.join(here, "entry.png"), "/bot/entry.png"):
+    candidates = [os.path.join(here, NAME), os.path.join("/bot", NAME)]
+    for path in candidates:
         if os.path.isfile(path):
             return path
     return None
@@ -18,22 +22,26 @@ def find_source():
 def main():
     src = find_source()
     if src is None:
-        print("error: no source entry.png found (looked next to script and /bot/entry.png)")
+        print("error: no source image found (looked for entry.png beside the "
+              "script and at /bot/entry.png)", file=sys.stderr)
         return 1
 
     os.makedirs("/output", exist_ok=True)
-    dst = "/output/entry.png"
+    dst = os.path.join("/output", NAME)
 
     total = 0
+    digest = hashlib.sha256()
     with open(src, "rb") as fin, open(dst, "wb") as fout:
         while True:
             chunk = fin.read(CHUNK)
             if not chunk:
                 break
             fout.write(chunk)
+            digest.update(chunk)
             total += len(chunk)
 
-    print("copied %d bytes from %s to %s" % (total, src, dst))
+    print(f"copied {total} bytes")
+    print(digest.hexdigest())
     return 0
 
 
