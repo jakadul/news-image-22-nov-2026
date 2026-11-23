@@ -1,37 +1,70 @@
 #!/usr/bin/env python3
-"""Deliver the "The World Tonight" front page to /output/entry.png.
+"""Publish the "The World Tonight" front page as /output/entry.png.
 
-The newspaper page is drawn offline and shipped as ``entry.png`` next to this
-file; this program does no rendering and no network access. It only copies that
-read-only asset (mounted at /bot by the harness) into the writable output
-directory, which is exactly what the bounty rules permit.
+The finished newspaper page ships beside this script as ``entry.png``. This
+program performs no rendering and no network access: it locates that asset and
+streams it byte-for-byte into the writable output directory expected by the
+bounty harness.
 
-The copy is a plain byte-for-byte stream copy, so two runs always produce
-identical files.
+Design notes
+------------
+* Standard library only, no third-party imports, CPython 3.8+.
+* Deterministic: the source is a fixed file and the copy is a raw byte stream,
+  so repeated runs produce identical output.
+* The transfer is a chunked read/write loop rather than a whole-file helper, so
+  peak memory stays at one buffer regardless of how large the page gets.
+* The output directory is created when missing, and a missing source aborts
+  with a non-zero exit status and a readable message instead of a traceback.
 """
 
-import shutil
+import sys
 from pathlib import Path
 
-SOURCE_NAMES = ("entry.png", "/bot/entry.png")
+SOURCE_CANDIDATES = (
+    Path(__file__).resolve().parent / "entry.png",
+    Path("/bot/entry.png"),
+)
+OUTPUT_DIR = Path("/output")
+OUTPUT_NAME = "entry.png"
+CHUNK_SIZE = 64 * 1024
 
 
-def find_source() -> Path:
+def locate_source() -> Path:
     """Return the first existing entry.png, preferring the one beside this file."""
-    here = Path(__file__).resolve().parent
-    for name in SOURCE_NAMES:
-        candidate = here / name if not name.startswith("/") else Path(name)
+    for candidate in SOURCE_CANDIDATES:
         if candidate.is_file():
             return candidate
-    raise SystemExit("entry.png not found")
+    tried = ", ".join(str(path) for path in SOURCE_CANDIDATES)
+    raise SystemExit(f"error: entry.png not found (looked in: {tried})")
 
 
-def main() -> None:
-    source = find_source()
-    output_dir = Path("/output")
-    output_dir.mkdir(parents=True, exist_ok=True)
-    shutil.copyfile(source, output_dir / "entry.png")
+def stream_copy(source: Path, destination: Path) -> int:
+    """Copy source to destination in fixed-size chunks and return bytes written."""
+    written = 0
+    with source.open("rb") as reader, destination.open("wb") as writer:
+        while True:
+            chunk = reader.read(CHUNK_SIZE)
+            if not chunk:
+                break
+            writer.write(chunk)
+            written += len(chunk)
+        writer.flush()
+    return written
+
+
+def main() -> int:
+    source = locate_source()
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    destination = OUTPUT_DIR / OUTPUT_NAME
+
+    written = stream_copy(source, destination)
+    expected = source.stat().st_size
+    if written != expected:
+        raise SystemExit(f"error: short write to {destination} ({written} of {expected} bytes)")
+
+    print(f"wrote {destination} ({written} bytes) from {source}")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
