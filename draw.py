@@ -191,6 +191,34 @@ for i, (tag, head, summ, src) in enumerate(stories):
     y += 10
     d.text((x, y), src, font=sans_bold(12), fill=INK)
 
+# ------------------------------------------------------------- UTC timeline
+TY = 788
+d.rectangle([56, TY, W - 56, TY + 1], fill=INK)
+d.text((56, TY + 10), "SUNDAY, IN UTC", font=sans_bold(13), fill=INK)
+d.text((56 + tw("SUNDAY, IN UTC", sans_bold(13)) + 10, TY + 11),
+       "Five moments that set the day", font=sans(12), fill=GREY)
+
+axis_y = TY + 52
+x0, x1 = 104, 934
+d.rectangle([x0, axis_y, x1, axis_y + 1], fill="#BBBBBB")
+
+marks = [
+    (0.00, "00:40", "KYIV STRIKE", "above"),
+    (0.27, "06:10", "HORMUZ CLAIM", "below"),
+    (0.55, "09:45", "COP31 OBJECTION", "above"),
+    (0.78, "11:20", "EU REJECTS", "below"),
+    (0.97, "12:00", "PRESS TIME", "above"),
+]
+for frac, tm, label, side in marks:
+    mx = int(x0 + frac * (x1 - x0))
+    d.ellipse([mx - 6, axis_y - 5, mx + 6, axis_y + 7], fill=RED)
+    d.ellipse([mx - 2, axis_y - 1, mx + 2, axis_y + 3], fill="white")
+    tf = sans_bold(15)
+    lf = sans_bold(11)
+    ty = axis_y - 30 if side == "above" else axis_y + 14
+    d.text((mx - tw(tm, tf) // 2, ty), tm, font=tf, fill=INK)
+    d.text((mx - tw(label, lf) // 2, ty + (18 if side == "above" else 16)), label, font=lf, fill=RED)
+
 # ------------------------------------------------------------- bottom band
 BY = 890
 d.rectangle([56, BY, W - 56, BY + 1], fill=INK)
