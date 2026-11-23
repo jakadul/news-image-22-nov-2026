@@ -8,7 +8,7 @@ from PIL import Image, ImageDraw, ImageFont
 W = H = 1024
 INK = "#111111"
 RED = "#B3121B"
-GREY = "#696969"
+GREY = "#555555"
 FONT_DIR = os.environ.get("FONT_DIR", "/root/makefun-tr/practice-1119/fonts/")
 
 _font_cache = {}
