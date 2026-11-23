@@ -208,7 +208,7 @@ briefs = [
 BRIEF_W = 300
 b_x = [56, 372]
 b_y = BY + 32
-row_h = 24
+row_h = 26
 for idx, (text, src) in enumerate(briefs):
     col = idx // 3
     row = idx % 3
@@ -238,11 +238,11 @@ for line in lines:
     ly += 20
 
 # ------------------------------------------------------------------ footer
-d.rectangle([56, 1014, W - 56, 1014], fill=GREY)
+d.rectangle([56, 1016, W - 56, 1016], fill=GREY)
 f = sans_bold(11)
-d.text((56, 1000), "ONE DAY \u00b7 24 STORIES \u00b7 7 REGIONS \u00b7 ALL FACTS AS REPORTED",
+d.text((56, 1002), "ONE DAY \u00b7 24 STORIES \u00b7 7 REGIONS \u00b7 ALL FACTS AS REPORTED",
        font=f, fill=GREY)
-d.text((W - 56 - tw("PAGE 01", f), 1000), "PAGE 01", font=f, fill=GREY)
+d.text((W - 56 - tw("PAGE 01", f), 1002), "PAGE 01", font=f, fill=GREY)
 
 # ------------------------------------------------------------------ output
 out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "entry.png")
