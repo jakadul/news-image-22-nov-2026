@@ -1,47 +1,47 @@
 #!/usr/bin/env python3
-"""Copy entry.png into /output/entry.png in 64 KiB chunks."""
+"""Copy entry.png to /output/entry.png in 64 KiB chunks and print sha256.
+
+Python 3.13, standard library only, no network.
+"""
 
 import hashlib
 import os
-import shutil
 import sys
 
 CHUNK = 64 * 1024
-NAME = "entry.png"
-
-
-def find_source():
-    here = os.path.dirname(os.path.abspath(__file__))
-    candidates = [os.path.join(here, NAME), os.path.join("/bot", NAME)]
-    for path in candidates:
-        if os.path.isfile(path):
-            return path
-    return None
+HERE = os.path.dirname(os.path.abspath(__file__))
+CANDIDATES = [os.path.join(HERE, "entry.png"), "/bot/entry.png"]
+OUT_DIR = "/output"
+OUT_PATH = os.path.join(OUT_DIR, "entry.png")
 
 
 def main():
-    src = find_source()
+    src = None
+    for cand in CANDIDATES:
+        if os.path.isfile(cand):
+            src = cand
+            break
     if src is None:
-        print("error: no source image found (looked for entry.png beside the "
-              "script and at /bot/entry.png)", file=sys.stderr)
+        print("ERROR: no entry.png found beside the script (%s) or at /bot/entry.png"
+              % os.path.join(HERE, "entry.png"), file=sys.stderr)
         return 1
 
-    os.makedirs("/output", exist_ok=True)
-    dst = os.path.join("/output", NAME)
+    os.makedirs(OUT_DIR, exist_ok=True)
 
-    total = 0
     digest = hashlib.sha256()
-    with open(src, "rb") as fin, open(dst, "wb") as fout:
+    total = 0
+    with open(src, "rb") as fin, open(OUT_PATH, "wb") as fout:
         while True:
-            chunk = fin.read(CHUNK)
-            if not chunk:
+            buf = fin.read(CHUNK)
+            if not buf:
                 break
-            fout.write(chunk)
-            digest.update(chunk)
-            total += len(chunk)
+            fout.write(buf)
+            digest.update(buf)
+            total += len(buf)
 
-    print(f"copied {total} bytes")
-    print(digest.hexdigest())
+    print("source: %s" % src)
+    print("bytes: %d" % total)
+    print("sha256: %s" % digest.hexdigest())
     return 0
 
 
